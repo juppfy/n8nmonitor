@@ -125,7 +125,7 @@ export default function NotificationsSettingsPage() {
                   Push notifications not supported
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Your browser doesn't support push notifications. Try using Chrome, Edge, or Firefox.
+                  Your browser doesn&apos;t support push notifications. Try using Chrome, Edge, or Firefox.
                 </p>
               </div>
             </div>
