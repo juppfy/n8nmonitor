@@ -1,0 +1,225 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Better Auth Required Schema
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  emailVerified Boolean
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  sessions      Session[]
+  accounts      Account[]
+
+  // App relations
+  n8nInstances    N8nInstance[]
+  invitations     Invitation[] @relation("InvitedBy")
+  role            String       @default("USER")
+  userSettings    UserSettings?
+  pushSubscriptions PushSubscription[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  userId                String
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime? @updatedAt
+
+  @@map("verification")
+}
+
+// App-specific models
+model N8nInstance {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  baseUrl     String
+  apiKey      String   // Encrypted
+  isActive    Boolean  @default(true)
+  lastCheck   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workflows   Workflow[]
+  executions  Execution[]
+  
+  @@index([userId])
+}
+
+model Workflow {
+  id            String   @id @default(cuid())
+  instanceId    String
+  n8nWorkflowId String
+  name          String
+  isActive      Boolean
+  lastExecution DateTime?
+  lastSync      DateTime  @default(now())
+  
+  instance      N8nInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  executions    Execution[]
+  
+  @@unique([instanceId, n8nWorkflowId])
+  @@index([instanceId])
+}
+
+model Execution {
+  id            String   @id @default(cuid())
+  instanceId    String
+  workflowId    String?
+  n8nExecutionId String
+  status        String   // success, error, running, waiting
+  startedAt     DateTime
+  finishedAt    DateTime?
+  data          String?  // JSON data
+  
+  instance      N8nInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  workflow      Workflow?   @relation(fields: [workflowId], references: [id], onDelete: SetNull)
+  
+  @@index([instanceId])
+  @@index([workflowId])
+  @@index([status])
+  @@index([startedAt])
+}
+
+model Invitation {
+  id          String   @id @default(cuid())
+  email       String
+  token       String   @unique
+  invitedBy   String
+  role        String   @default("USER")
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  createdAt   DateTime @default(now())
+  
+  inviter     User     @relation("InvitedBy", fields: [invitedBy], references: [id], onDelete: Cascade)
+  
+  @@index([token])
+  @@index([email])
+}
+
+model UserSettings {
+  id                      String   @id @default(cuid())
+  userId                  String   @unique
+  resendApiKey            String?  // Encrypted
+  resendFromEmail         String?
+  pushNotificationsEnabled Boolean @default(false)
+  emailNotificationsEnabled Boolean @default(true)
+  executionFailureAlerts  Boolean @default(true)
+  workflowStatusAlerts    Boolean @default(false)
+  notificationEmail       String?
+  errorThreshold          Int      @default(1) // Send alert after X consecutive errors
+  autoDeactivateWorkflow  Boolean  @default(false) // Auto-deactivate after threshold
+  autoDeactivateThreshold Int      @default(3) // Deactivate after X consecutive errors
+  notifyOnSuccess         Boolean  @default(false)
+  notifyOnError           Boolean  @default(true)
+  notifyOnWarning         Boolean  @default(false)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  
+  user                    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+}
+
+model PushSubscription {
+  id            String   @id @default(cuid())
+  userId        String
+  endpoint      String   @unique
+  p256dh        String
+  auth          String
+  userAgent     String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+}
+
+model NotificationLog {
+  id            String   @id @default(cuid())
+  userId        String
+  workflowId    String?
+  instanceId    String?
+  executionId   String?
+  type          String   // "error", "warning", "success", "info"
+  title         String
+  message       String
+  metadata      String?  // JSON stringified additional data
+  sent          Boolean  @default(false)
+  sentAt        DateTime?
+  error         String?  // If sending failed
+  createdAt     DateTime @default(now())
+
+  @@index([userId])
+  @@index([workflowId])
+  @@index([sent])
+  @@map("notification_log")
+}
+
+model WorkflowErrorCounter {
+  id                  String   @id @default(cuid())
+  workflowId          String   @unique
+  consecutiveErrors   Int      @default(0)
+  lastErrorAt         DateTime?
+  lastSuccessAt       DateTime?
+  totalErrors         Int      @default(0)
+  isAutoDeactivated   Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([workflowId])
+  @@map("workflow_error_counter")
+}
