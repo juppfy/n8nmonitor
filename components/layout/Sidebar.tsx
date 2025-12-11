@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
@@ -45,8 +46,17 @@ export function Sidebar({ userRole }: SidebarProps) {
   return (
     <div className="flex h-screen w-64 flex-col bg-gray-900 text-white">
       {/* Logo */}
-      <div className="flex h-16 items-center justify-center border-b border-gray-800">
-        <h1 className="text-xl font-bold">n8n Monitor</h1>
+      <div className="flex h-20 items-center justify-center border-b border-gray-800 p-4">
+        <div className="bg-white rounded-xl p-3 shadow-lg">
+          <Image 
+            src="/logo.png" 
+            alt="n8n Monitor" 
+            width={180} 
+            height={45}
+            priority
+            className="object-contain"
+          />
+        </div>
       </div>
 
       {/* Navigation */}
