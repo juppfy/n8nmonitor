@@ -303,4 +303,94 @@ export async function sendExecutionFailureEmail(
   }
 }
 
+export async function sendPasswordResetEmail(email: string, token: string, expiresAt: Date) {
+  const resend = await getResendClient();
+  if (!resend) {
+    console.error("Resend is not configured. Please set RESEND_API_KEY in environment variables.");
+    throw new Error("Resend is not configured. Please configure RESEND_API_KEY in your environment variables.");
+  }
+
+  const resetLink = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/reset-password?token=${token}`;
+  const fromEmail = process.env.RESEND_FROM_EMAIL || "noreply@n8n-monitor.dev";
+
+  await resend.emails.send({
+    from: fromEmail,
+    to: email,
+    subject: "Reset your password - n8n Monitor",
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+              line-height: 1.6;
+              color: #111827;
+              background-color: #f9fafb;
+              margin: 0;
+              padding: 0;
+            }
+            .container {
+              max-width: 560px;
+              margin: 0 auto;
+              padding: 24px;
+            }
+            .card {
+              background: #ffffff;
+              border-radius: 12px;
+              padding: 32px;
+              box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+              border: 1px solid #e5e7eb;
+            }
+            .title {
+              margin: 0 0 8px 0;
+              font-size: 22px;
+              color: #111827;
+            }
+            .subtitle {
+              margin: 0 0 24px 0;
+              color: #6b7280;
+            }
+            .button {
+              display: inline-block;
+              padding: 14px 20px;
+              background: #111827;
+              color: #ffffff;
+              text-decoration: none;
+              border-radius: 10px;
+              font-weight: 600;
+              margin: 12px 0;
+            }
+            .muted {
+              color: #6b7280;
+              font-size: 12px;
+              margin-top: 16px;
+            }
+            .link {
+              color: #111827;
+              word-break: break-all;
+              font-size: 12px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="card">
+              <h1 class="title">Reset your password</h1>
+              <p class="subtitle">We received a request to reset the password for your n8n Monitor account.</p>
+              <p>Click the button below to set a new password. This link will expire at ${expiresAt.toLocaleString()}.</p>
+              <p><a href="${resetLink}" class="button">Reset Password</a></p>
+              <p class="muted">If the button does not work, copy and paste this link:</p>
+              <p class="link">${resetLink}</p>
+              <p class="muted">If you didn't request this, you can safely ignore this email.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+  });
+}
+
 
