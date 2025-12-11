@@ -27,6 +27,13 @@ export const auth = betterAuth({
 
   secret: process.env.BETTER_AUTH_SECRET || "change-this-secret",
   baseURL: process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+  
+  advanced: {
+    useSecureCookies: process.env.NODE_ENV === "production",
+    crossSubDomainCookies: {
+      enabled: false,
+    },
+  },
 });
 
 export type Session = typeof auth.$Infer.Session;
