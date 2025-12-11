@@ -46,15 +46,14 @@ export function Sidebar({ userRole }: SidebarProps) {
   return (
     <div className="flex h-screen w-64 flex-col bg-gray-900 text-white">
       {/* Logo */}
-      <div className="flex h-20 items-center justify-center border-b border-gray-800 p-4">
-        <div className="bg-white rounded-xl p-3 shadow-lg">
-          <Image 
-            src="/logo.png" 
-            alt="n8n Monitor" 
-            width={180} 
-            height={45}
+      <div className="flex items-center justify-center border-b border-gray-800 px-4 py-6">
+        <div className="flex items-center justify-center rounded-2xl bg-white px-4 py-3 shadow-sm">
+          <Image
+            src="/logo.png"
+            alt="n8n Monitor"
+            width={160}
+            height={50}
             priority
-            className="object-contain"
           />
         </div>
       </div>
