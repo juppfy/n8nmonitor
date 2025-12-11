@@ -52,16 +52,16 @@ The app uses Next.js App Router. When deployed as a Node server (all platforms b
 6) Verify: open the deployment URL → `/setup` to create the admin.  
 7) Optional: enable “Force redirect to primary domain” to keep `NEXT_PUBLIC_APP_URL` stable.
 
-#### B) Railway
-1) Create a new Railway project → Add a Postgres plugin. Copy its `DATABASE_URL`.  
-2) Deploy the repo (GitHub connect or `railway up`).  
-3) Set Variables (Project → Variables): all required env vars above, plus `PORT=3000` if Railway doesn’t inject it. Set `NEXT_PUBLIC_APP_URL` and `BETTER_AUTH_URL` to the Railway domain.  
-4) Build & Start commands:  
-   - Build: `npm run build`  
-   - Start: `npm run start`  
-5) Migrations: in Railway “Shell” run `npx prisma migrate deploy` after env vars are set. You can also add a Deploy Hook/Start Command to run migrations before start.  
-6) Routing: ensure a catch-all route is configured (Railway forwards all paths to the service by default; nothing extra typically needed).  
-7) Verify at the assigned domain → `/setup`.
+#### B) Railway (RECOMMENDED for this project)
+1) Create a new Railway project → Connect your GitHub repo.  
+2) **Database**: Add a Postgres plugin OR use SQLite (Railway has persistent storage). For SQLite, use `DATABASE_URL="file:./prisma/dev.db"`.  
+3) Set Variables (Project → Variables): all required env vars from table above. Set `NEXT_PUBLIC_APP_URL` and `BETTER_AUTH_URL` to your Railway domain (e.g., `https://your-app.up.railway.app`).  
+4) **Important**: Railway automatically runs `npm run build` which now includes `prisma generate` and `prisma migrate deploy`.  
+5) Deploy: Railway will auto-deploy on git push. The build command now handles migrations automatically.  
+6) Routing: Railway forwards all paths by default; no extra config needed.  
+7) Verify at the assigned domain → `/setup` to create admin account.  
+
+**Note**: The `npm run build` script now automatically runs Prisma migrations before building Next.js, so you don't need to run migrations manually.
 
 #### C) DigitalOcean App Platform
 1) Create a new App from the Git repo.  

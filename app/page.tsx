@@ -3,6 +3,8 @@ import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/lib/auth/server";
 import { headers } from "next/headers";
 
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
   // 1. Check if admin exists (Setup check)
   // We use findFirst with select for performance
