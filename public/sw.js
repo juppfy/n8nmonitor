@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-globals */
 // Service Worker for Push Notifications + PWA precache placeholder
-// The line below is required by next-pwa/workbox injectManifest to avoid build errors.
-self.__WB_MANIFEST = self.__WB_MANIFEST || [];
+// The line below is required by next-pwa/workbox injectManifest; keep exactly one occurrence.
+self.__WB_MANIFEST = [];
 
 const CACHE_NAME = 'n8n-monitor-v1';
 const urlsToCache = [
