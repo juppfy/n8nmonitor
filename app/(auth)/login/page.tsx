@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
 import { authClient } from "@/lib/auth/client";
 
 export default function LoginPage() {
@@ -89,6 +90,11 @@ export default function LoginPage() {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Signing in..." : "Sign In"}
             </Button>
+            <div className="text-sm text-center text-muted-foreground">
+              <Link href="/forgot-password" className="text-primary hover:underline">
+                Forgot password?
+              </Link>
+            </div>
           </form>
         </CardContent>
       </Card>

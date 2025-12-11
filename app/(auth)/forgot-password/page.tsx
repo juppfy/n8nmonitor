@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
+
+export const dynamic = "force-dynamic";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
